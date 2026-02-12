@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIF/WebP to Video Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .format-selector {
+            margin-bottom: 20px;
+        }
+
+        .format-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .format-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .format-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .format-btn:hover {
+            border-color: #667eea;
+        }
+
+        .format-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .quality-selector {
+            margin-bottom: 20px;
+        }
+
+        .quality-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .preview-area {
+            display: none;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preview-area img, .preview-area video {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .file-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-area {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-area {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-video {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: #f3f4f6;
+            color: #666;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 GIF/WebP to Video</h1>
+        <p class="subtitle">Convert animated GIF or WebP to stable video format</p>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">
+                <strong>Klik atau drag & drop file</strong><br>
+                <small>Mendukung GIF dan WebP animasi (Max 100MB)</small>
+            </div>
+            <input type="file" id="fileInput" accept=".gif,.webp">
+        </div>
+
+        <div class="format-selector">
+            <label>Format Output:</label>
+            <div class="format-options">
+                <button class="format-btn active" data-format="mp4">MP4 (H.264)</button>
+                <button class="format-btn" data-format="webm">WebM (VP9)</button>
+            </div>
+        </div>
+
+        <div class="quality-selector">
+            <label>Kualitas Video:</label>
+            <select id="qualitySelect">
+                <option value="high">High Quality (Bitrate Tinggi)</option>
+                <option value="medium" selected>Medium Quality (Balanced)</option>
+                <option value="low">Low Quality (File Kecil)</option>
+            </select>
+        </div>
+
+        <div class="preview-area" id="previewArea">
+            <div class="file-info" id="fileInfo"></div>
+            <img id="previewImage" style="display:none;">
+        </div>
+
+        <button class="convert-btn" id="convertBtn" disabled>Konversi ke Video</button>
+
+        <div class="progress-area" id="progressArea">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <div class="progress-text" id="progressText">Loading FFmpeg...</div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <video id="resultVideo" class="result-video" controls></video>
+            <button class="download-btn" id="downloadBtn">⬇️ Download Video</button>
+            <button class="reset-btn" id="resetBtn">🔄 Convert Lagi</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        const { FFmpeg } = FFmpegWASM;
+        const { fetchFile, toBlobURL } = FFmpegUtil;
+
+        let ffmpeg = null;
+        let selectedFile = null;
+        let selectedFormat = 'mp4';
+        let resultBlob = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewArea = document.getElementById('previewArea');
+        const previewImage = document.getElementById('previewImage');
+        const fileInfo = document.getElementById('fileInfo');
+        const convertBtn = document.getElementById('convertBtn');
+        const progressArea = document.getElementById('progressArea');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultArea = document.getElementById('resultArea');
+        const resultVideo = document.getElementById('resultVideo');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const loading = document.getElementById('loading');
+
+        // Format selector
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedFormat = btn.dataset.format;
+            });
+        });
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file selection
+        function handleFile(file) {
+            hideError();
+            
+            // Validate file type
+            const validTypes = ['image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showError('File harus berformat GIF atau WebP!');
+                return;
+            }
+
+            // Validate file size (100MB max)
+            const maxSize = 100 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showError('File terlalu besar! Maksimal 100MB');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                previewArea.style.display = 'block';
+
+                // Show file info
+                fileInfo.innerHTML = `
+                    <p><strong>Nama File:</strong> ${file.name}</p>
+                    <p><strong>Ukuran:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p><strong>Tipe:</strong> ${file.type}</p>
+                `;
+
+                convertBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Load FFmpeg
+        async function loadFFmpeg() {
+            if (ffmpeg) return;
+
+            try {
+                ffmpeg = new FFmpeg();
+                
+                ffmpeg.on('log', ({ message }) => {
+                    console.log(message);
+                });
+
+                ffmpeg.on('progress', ({ progress, time }) => {
+                    const percentage = Math.round(progress * 100);
+                    updateProgress(percentage, `Converting... ${percentage}%`);
+                });
+
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+                await ffmpeg.load({
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                });
+
+                console.log('FFmpeg loaded successfully');
+            } catch (error) {
+                console.error('Failed to load FFmpeg:', error);
+                showError('Gagal memuat FFmpeg. Silakan refresh halaman.');
+            }
+        }
+
+        // Convert file
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            try {
+                convertBtn.disabled = true;
+                progressArea.style.display = 'block';
+                resultArea.style.display = 'none';
+                hideError();
+
+                updateProgress(0, 'Loading FFmpeg...');
+                await loadFFmpeg();
+
+                updateProgress(10, 'Reading file...');
+                const inputData = await fetchFile(selectedFile);
+                const inputExt = selectedFile.name.split('.').pop();
+                const inputName = `input.${inputExt}`;
+                const outputName = `output.${selectedFormat}`;
+
+                updateProgress(20, 'Writing input file...');
+                await ffmpeg.writeFile(inputName, inputData);
+
+                // Get quality settings
+                const quality = qualitySelect.value;
+                let bitrate, crf;
+                
+                if (quality === 'high') {
+                    bitrate = '5000k';
+                    crf = '18';
+                } else if (quality === 'medium') {
+                    bitrate = '2500k';
+                    crf = '23';
+                } else {
+                    bitrate = '1000k';
+                    crf = '28';
+                }
+
+                updateProgress(30, 'Converting to video...');
+
+                // FFmpeg conversion command
+                let ffmpegArgs;
+                if (selectedFormat === 'mp4') {
+                    ffmpegArgs = [
+                        '-i', inputName,
+                        '-movflags', 'faststart',
+                        '-pix_fmt', 'yuv420p',
+                        '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+                        '-c:v', 'libx264',
+                        '-crf', crf,
+                        '-b:v', bitrate,
+                        '-preset', 'medium',
+                        outputName
+                    ];
+                } else {
+                    ffmpegArgs = [
+                        '-i', inputName,
+                        '-c:v', 'libvpx-vp9',
+                        '-b:v', bitrate,
+                        '-crf', crf,
+                        '-preset', 'medium',
+                        outputName
+                    ];
+                }
+
+                await ffmpeg.exec(ffmpegArgs);
+
+                updateProgress(90, 'Reading output file...');
+                const data = await ffmpeg.readFile(outputName);
+
+                updateProgress(95, 'Creating video blob...');
+                const mimeType = selectedFormat === 'mp4' ? 'video/mp4' : 'video/webm';
+                resultBlob = new Blob([data.buffer], { type: mimeType });
+                const url = URL.createObjectURL(resultBlob);
+
+                updateProgress(100, 'Conversion complete!');
+
+                // Show result
+                resultVideo.src = url;
+                resultArea.style.display = 'block';
+                progressArea.style.display = 'none';
+
+                // Clean up
+                await ffmpeg.deleteFile(inputName);
+                await ffmpeg.deleteFile(outputName);
+
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showError('Terjadi kesalahan saat konversi: ' + error.message);
+                progressArea.style.display = 'none';
+                convertBtn.disabled = false;
+            }
+        });
+
+        // Download button
+        downloadBtn.addEventListener('click', () => {
+            if (!resultBlob) return;
+
+            const url = URL.createObjectURL(resultBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `converted_video_${Date.now()}.${selectedFormat}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            selectedFile = null;
+            resultBlob = null;
+            fileInput.value = '';
+            previewArea.style.display = 'none';
+            resultArea.style.display = 'none';
+            progressArea.style.display = 'none';
+            convertBtn.disabled = true;
+            previewImage.src = '';
+            resultVideo.src = '';
+            hideError();
+        });
+
+        // Helper functions
+        function updateProgress(percentage, text) {
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+            progressText.textContent = text;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
